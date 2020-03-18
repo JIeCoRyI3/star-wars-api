@@ -1,5 +1,9 @@
-.container{
+.boom{
+    color: cornsilk;
+
+}
+
+.error{
     margin-left: auto;
     margin-right: auto;
-    width: 100%;
 }
