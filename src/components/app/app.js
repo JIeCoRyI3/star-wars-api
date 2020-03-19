@@ -1,47 +1,77 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 
 import Header from '../header';
 import RandomPlanet from '../random-planet';
-import ItemList from '../item-list';
-import PersonDetails from '../person-details';
+import ErrorBoundry from '../error-boundry';
+
+import Row from "../row/row";
+import ItemDetails, { Record } from "../item-details/item-details";
+import SwapiService from "../../services/swapi-service";
 
 import './app.css';
-import PeoplePage from "../people-page";
-import ErrorMessage from "../error-message";
-import ErrorButton from "../error-button";
 
-export default class App extends Component{
+export default class App extends Component {
 
-    state = {
-        toggle: true,
-        error: false
-    };
+  swapiService = new SwapiService();
 
-     toggled = () => {
-         this.setState((state) => {
-             return {toggle: !state.toggle}
-         })
-     };
+  state = {
+    showRandomPlanet: true
+  };
 
-    componentDidCatch(error, errorInfo) {
-        this.setState({error: true});
-    }
+  toggleRandomPlanet = () => {
+    this.setState((state) => {
+      return {
+        showRandomPlanet: !state.showRandomPlanet
+      }
+    });
+  };
 
-    render() {
-     const {toggle, error} = this.state;
+  render() {
 
-     if(error){
-         return <ErrorMessage/>;
-     }
+    const planet = this.state.showRandomPlanet ?
+      <RandomPlanet/> :
+      null;
 
-     return (
-         <div className="container">
-             <Header />
-             {toggle ? <RandomPlanet /> : null}
-             <button onClick={this.toggled} type="button" className="btn btn-warning" style={{marginBottom: 30+'px'}}>Toggle Random Planet</button>
-             <ErrorButton/>
-             <PeoplePage/>
-         </div>
-     );
- }
-};
+    const { getPerson,
+            getStarship,
+            getPersonImage,
+            getStarshipImage } = this.swapiService;
+
+    const personDetails = (
+      <ItemDetails
+        itemId={11}
+        getData={getPerson}
+        getImageUrl={getPersonImage} >
+
+        <Record field="gender" label="Gender" />
+        <Record field="eyeColor" label="Eye Color" />
+
+      </ItemDetails>
+    );
+
+    const starshipDetails = (
+      <ItemDetails
+        itemId={5}
+        getData={getStarship}
+        getImageUrl={getStarshipImage}>
+
+        <Record field="model" label="Model" />
+        <Record field="length" label="Length" />
+        <Record field="costInCredits" label="Cost" />
+      </ItemDetails>
+
+    );
+
+    return (
+      <ErrorBoundry>
+        <div className="stardb-app">
+          <Header />
+
+          <Row
+            left={personDetails}
+            right={starshipDetails} />
+        </div>
+      </ErrorBoundry>
+    );
+  }
+}

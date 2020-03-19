@@ -1,75 +1,56 @@
 import React, { Component } from 'react';
 
+import ErrorButton from '../error-button/error-button';
+import SwapiService from '../../services/swapi-service';
+
 import './person-details.css';
-import SwapiService from "../../services/swapi-service";
-import Spinner from "../spinner";
-import ErrorButton from "../error-button";
 
 export default class PersonDetails extends Component {
 
-  connect = new SwapiService();
+  swapiService = new SwapiService();
 
   state = {
-    person: null,
-    loading: true
+    person: null
   };
-
-  componentDidUpdate(prevProps, prevState, snapshot) {
-    if(this.props.personId !== prevProps.personId) {
-      this.setState({
-        loading: true
-      });
-      this.updatePerson();
-    }
-  }
 
   componentDidMount() {
     this.updatePerson();
   }
 
-  updatePerson(){
+  componentDidUpdate(prevProps) {
+    if (this.props.personId !== prevProps.personId) {
+      this.updatePerson();
+    }
+  }
+
+  updatePerson() {
     const { personId } = this.props;
-    if(!personId){
+    if (!personId) {
       return;
     }
 
-    this.connect
-        .getPerson(personId)
-        .then((person) => {
-          this.setState({
-            person,
-            loading: false
-          });
-        });
+    this.swapiService
+      .getPerson(personId)
+      .then((person) => {
+        this.setState({ person });
+      });
   }
 
   render() {
 
-    if(!this.state.person){
-      return <span>Select a person from list</span>;
+    const { person } = this.state;
+    if (!person) {
+      return <span>Select a person from a list</span>;
     }
-    const {loading} = this.state;
 
-    const content = !loading ? <Content person={this.state.person}/> : null;
-    const spinner = loading ? <Spinner/> : null;
+    const { id, name, gender,
+              birthYear, eyeColor } = person;
 
     return (
-        <React.Fragment>
-          {spinner}
-          {content}
-        </React.Fragment>
-    )
-  }
-}
-
-const Content = ({person}) => {
-  const { id, name, gender, birthYear, eyeColor} = person;
-
-  return (
       <div className="person-details card">
         <img className="person-image"
-             alt="person"
-             src={`https://starwars-visualguide.com/assets/img/characters/${id}.jpg`} />
+          src={`https://starwars-visualguide.com/assets/img/characters/${id}.jpg`}
+          alt="character"/>
 
         <div className="card-body">
           <h4>{name}</h4>
@@ -86,11 +67,10 @@ const Content = ({person}) => {
               <span className="term">Eye Color</span>
               <span>{eyeColor}</span>
             </li>
-            <li className="list-group-item">
-              <ErrorButton/>
-            </li>
           </ul>
+          <ErrorButton />
         </div>
       </div>
-  )
-};
+    )
+  }
+}
